@@ -287,8 +287,8 @@ public class NorBitsParser : IParseIndexerResponse
             var title = qDetails?.GetAttribute("title").Trim();
             var details = _settings.BaseUrl + qDetails?.GetAttribute("href").TrimStart('/');
 
-            var mainCategory = row.QuerySelector("td:nth-of-type(1) > div > a[href*=\"main_cat[]\"]")?.GetAttribute("href")?.Split('?').Last();
-            var secondCategory = row.QuerySelector("td:nth-of-type(1) > div > a[href*=\"sub2_cat[]\"]")?.GetAttribute("href")?.Split('?').Last();
+            var mainCategory = row.QuerySelector("td:nth-of-type(1) > a[href*=\"main_cat[]\"]")?.GetAttribute("href")?.Split('?').Last();
+            var secondCategory = row.QuerySelector("td:nth-of-type(1) > a[href*=\"sub2_cat[]\"]")?.GetAttribute("href")?.Split('?').Last();
 
             var categoryList = new[] { mainCategory, secondCategory };
             var cat = string.Join("&", categoryList.Where(c => !string.IsNullOrWhiteSpace(c)));
@@ -308,7 +308,7 @@ public class NorBitsParser : IParseIndexerResponse
                 Grabs = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(8)")?.FirstChild?.TextContent.Trim()),
                 Seeders = seeders,
                 Peers = seeders + leechers,
-                PublishDate = DateTime.ParseExact(row.QuerySelector("td:nth-of-type(5)")?.TextContent.Trim(), "yyyy-MM-ddHH:mm:ss", CultureInfo.InvariantCulture),
+                PublishDate = DateTime.ParseExact(row.QuerySelector("td:nth-of-type(5)")?.TextContent.Replace("\n", string.Empty).Replace("\r", string.Empty).Trim(), "yyyy-MM-ddHH:mm:ss", CultureInfo.InvariantCulture),
                 DownloadVolumeFactor = 1,
                 UploadVolumeFactor = 1,
                 MinimumRatio = 1,
