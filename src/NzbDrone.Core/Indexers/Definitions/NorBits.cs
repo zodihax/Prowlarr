@@ -308,7 +308,7 @@ public class NorBitsParser : IParseIndexerResponse
                 Grabs = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(8)")?.FirstChild?.TextContent.Trim()),
                 Seeders = seeders,
                 Peers = seeders + leechers,
-                PublishDate = DateTime.ParseExact(row.QuerySelector("td:nth-of-type(5)")?.TextContent.Replace("\n", string.Empty).Replace("\r", string.Empty).Trim(), "yyyy-MM-ddHH:mm:ss", CultureInfo.InvariantCulture),
+                PublishDate = DateTime.ParseExact(row.QuerySelector("td:nth-of-type(5)")?.TextContent.Trim(), "yyyy-MM-ddHH:mm:ss", CultureInfo.InvariantCulture),
                 DownloadVolumeFactor = 1,
                 UploadVolumeFactor = 1,
                 MinimumRatio = 1,
