@@ -292,13 +292,13 @@ public class NorBitsParser : IParseIndexerResponse
             var href = anchor.GetAttribute("href");
             var qs = href.Substring(href.IndexOf('?') + 1);
             var qsParams = qs.Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
+            
             // Extract the category parameters we care about. 
             // Note that sub2_cat can appear multiple times; same for sub3_cat, so we gather them in lists.
             var mainCatParam = qsParams.FirstOrDefault(x => x.StartsWith("main_cat[]="));
             var sub2CatParams = qsParams.Where(x => x.StartsWith("sub2_cat[]=")).ToList();
             var sub3CatParams = qsParams.Where(x => x.StartsWith("sub3_cat[]=")).ToList();
-
+            
             // Build up a single cat string that includes main_cat plus all sub2_cat & sub3_cat
             var catParts = new List<string>();
             if (!string.IsNullOrEmpty(mainCatParam))
@@ -318,13 +318,6 @@ public class NorBitsParser : IParseIndexerResponse
 
             var cat = string.Join("&", catParts);
 
-            // Now continue extracting other info:
-            var link = _settings.BaseUrl + row.QuerySelector("td:nth-of-type(2) > a[href*=\"download.php?id=\"]")?.GetAttribute("href").TrimStart('/');
-            var qDetails = row.QuerySelector("td:nth-of-type(2) > a[href*=\"details.php?id=\"]");
-
-            var title = qDetails?.GetAttribute("title")?.Trim();
-            var details = _settings.BaseUrl + qDetails?.GetAttribute("href").TrimStart('/');
-
             var seeders = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(9)").TextContent);
             var leechers = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(10)").TextContent);
 
@@ -334,39 +327,30 @@ public class NorBitsParser : IParseIndexerResponse
                 InfoUrl = details,
                 DownloadUrl = link,
                 Title = title,
-                Categories = _categories.MapTrackerCatToNewznab(cat),  // <-- uses our joined string
+                Categories = _categories.MapTrackerCatToNewznab(cat),
                 Size = ParseUtil.GetBytes(row.QuerySelector("td:nth-of-type(7)")?.TextContent),
                 Files = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(3) > a")?.TextContent.Trim()),
                 Grabs = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(8)")?.FirstChild?.TextContent.Trim()),
                 Seeders = seeders,
                 Peers = seeders + leechers,
-                PublishDate = DateTime.ParseExact(row.QuerySelector("td:nth-of-type(5)")?.TextContent.Trim(),
-                                                  "yyyy-MM-ddHH:mm:ss",
-                                                  CultureInfo.InvariantCulture),
+                PublishDate = DateTime.ParseExact(row.QuerySelector("td:nth-of-type(5)")?.TextContent.Trim(), "yyyy-MM-ddHH:mm:ss", CultureInfo.InvariantCulture),
                 DownloadVolumeFactor = 1,
                 UploadVolumeFactor = 1,
                 MinimumRatio = 1,
                 MinimumSeedTime = 172800 // 48 hours
             };
 
-            // Handle “genres” if present
             var genres = row.QuerySelector("span.genres")?.TextContent;
             if (!string.IsNullOrEmpty(genres))
             {
-                genres = genres.Trim().Replace("\xA0", " ")
-                               .Replace("(", "").Replace(")", "")
-                               .Replace(" | ", ",");
+                genres = genres.Trim().Replace("\xA0", " ").Replace("(", "").Replace(")", "").Replace(" | ", ",");
                 release.Description = genres;
                 release.Genres = genres.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).ToList();
             }
 
-            // Handle imdb
-            var imdbId = ParseUtil.GetImdbId(
-                row.QuerySelector("a[href*=\"imdb.com/title/tt\"]")?.GetAttribute("href")?.TrimEnd('/')?.Split('/')?.LastOrDefault()
-            );
+            var imdbId = ParseUtil.GetImdbId(row.QuerySelector("a[href*=\"imdb.com/title/tt\"]")?.GetAttribute("href")?.TrimEnd('/')?.Split('/')?.LastOrDefault());
             release.ImdbId = imdbId ?? 0;
 
-            // Handle freeleech/halfleech flags
             if (row.QuerySelector("img[title=\"100% freeleech\"]") != null)
             {
                 release.DownloadVolumeFactor = 0;
