@@ -25,7 +25,7 @@ public class NorBits : TorrentIndexerBase<NorBitsSettings>
 {
     public override string Name => "NorBits";
     public override string[] IndexerUrls => new[] { "https://norbits.net/" };
-    public override string Description => "NorBits is a Norwegian Private site for MOVIES / TV / GENERAL";
+    public override string Description => "NorBits is a Norwegian Private site for MOVIES / TV / GENERAL / TEST";
     public override string Language => "nb-NO";
     public override Encoding Encoding => Encoding.GetEncoding("iso-8859-1");
     public override IndexerPrivacy Privacy => IndexerPrivacy.Private;
@@ -132,7 +132,6 @@ public class NorBits : TorrentIndexerBase<NorBitsSettings>
         caps.Categories.AddCategoryMapping("main_cat[]=1", NewznabStandardCategory.Movies, "Filmer");
         caps.Categories.AddCategoryMapping("main_cat[]=1&sub2_cat[]=49", NewznabStandardCategory.MoviesUHD, "Filmer - UHD-2160p");
         caps.Categories.AddCategoryMapping("main_cat[]=1&sub2_cat[]=19", NewznabStandardCategory.MoviesHD, "Filmer - HD-1080p/i");
-        caps.Categories.AddCategoryMapping("main_cat[]=1&sub2_cat[]=20", NewznabStandardCategory.MoviesHD, "Filmer - HD-720p");
         caps.Categories.AddCategoryMapping("main_cat[]=1&sub2_cat[]=22", NewznabStandardCategory.MoviesSD, "Filmer - SD");
         caps.Categories.AddCategoryMapping("main_cat[]=2", NewznabStandardCategory.TV, "TV");
         caps.Categories.AddCategoryMapping("main_cat[]=2&sub2_cat[]=49", NewznabStandardCategory.TVUHD, "TV - UHD-2160p");
