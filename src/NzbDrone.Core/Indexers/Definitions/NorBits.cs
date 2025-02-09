@@ -130,28 +130,13 @@ public class NorBits : TorrentIndexerBase<NorBitsSettings>
         };
 
         caps.Categories.AddCategoryMapping("main_cat[]=1", NewznabStandardCategory.Movies, "Filmer");
-        caps.Categories.AddCategoryMapping("main_cat[]=1&sub2_cat[]=49", NewznabStandardCategory.MoviesUHD, "Filmer - UHD-2160p");
-        caps.Categories.AddCategoryMapping("main_cat[]=1&sub2_cat[]=19", NewznabStandardCategory.MoviesHD, "Filmer - HD-1080p/i");
-        caps.Categories.AddCategoryMapping("main_cat[]=1&sub2_cat[]=22", NewznabStandardCategory.MoviesSD, "Filmer - SD");
         caps.Categories.AddCategoryMapping("main_cat[]=2", NewznabStandardCategory.TV, "TV");
-        caps.Categories.AddCategoryMapping("main_cat[]=2&sub2_cat[]=49", NewznabStandardCategory.TVUHD, "TV - UHD-2160p");
-        caps.Categories.AddCategoryMapping("main_cat[]=2&sub2_cat[]=19", NewznabStandardCategory.TVHD, "TV - HD-1080p/i");
-        caps.Categories.AddCategoryMapping("main_cat[]=2&sub2_cat[]=20", NewznabStandardCategory.TVHD, "TV - HD-720p");
-        caps.Categories.AddCategoryMapping("main_cat[]=2&sub2_cat[]=22", NewznabStandardCategory.TVSD, "TV - SD");
         caps.Categories.AddCategoryMapping("main_cat[]=3", NewznabStandardCategory.PC, "Programmer");
         caps.Categories.AddCategoryMapping("main_cat[]=4", NewznabStandardCategory.Console, "Spill");
         caps.Categories.AddCategoryMapping("main_cat[]=5", NewznabStandardCategory.Audio, "Musikk");
-        caps.Categories.AddCategoryMapping("main_cat[]=5&sub2_cat[]=42", NewznabStandardCategory.AudioMP3, "Musikk - 192");
-        caps.Categories.AddCategoryMapping("main_cat[]=5&sub2_cat[]=43", NewznabStandardCategory.AudioMP3, "Musikk - 256");
-        caps.Categories.AddCategoryMapping("main_cat[]=5&sub2_cat[]=44", NewznabStandardCategory.AudioMP3, "Musikk - 320");
-        caps.Categories.AddCategoryMapping("main_cat[]=5&sub2_cat[]=45", NewznabStandardCategory.AudioMP3, "Musikk - VBR");
-        caps.Categories.AddCategoryMapping("main_cat[]=5&sub2_cat[]=46", NewznabStandardCategory.AudioLossless, "Musikk - Lossless");
         caps.Categories.AddCategoryMapping("main_cat[]=6", NewznabStandardCategory.Books, "Tidsskrift");
         caps.Categories.AddCategoryMapping("main_cat[]=7", NewznabStandardCategory.AudioAudiobook, "Lydbøker");
         caps.Categories.AddCategoryMapping("main_cat[]=8", NewznabStandardCategory.AudioVideo, "Musikkvideoer");
-        caps.Categories.AddCategoryMapping("main_cat[]=8&sub2_cat[]=19", NewznabStandardCategory.AudioVideo, "Musikkvideoer - HD-1080p/i");
-        caps.Categories.AddCategoryMapping("main_cat[]=8&sub2_cat[]=20", NewznabStandardCategory.AudioVideo, "Musikkvideoer - HD-720p");
-        caps.Categories.AddCategoryMapping("main_cat[]=8&sub2_cat[]=22", NewznabStandardCategory.AudioVideo, "Musikkvideoer - SD");
         caps.Categories.AddCategoryMapping("main_cat[]=40", NewznabStandardCategory.AudioOther, "Podcasts");
 
         return caps;
@@ -280,43 +265,13 @@ public class NorBitsParser : IParseIndexerResponse
 
         foreach (var row in rows)
         {
-            // Get the anchor that has main_cat[] in its URL
-            var anchor = row.QuerySelector("td:nth-of-type(1) a[href*=\"main_cat[]\"]");
-            if (anchor == null)
-            {
-                // If there's no main_cat[] link at all, skip
-                continue;
-            }
+            var link = _settings.BaseUrl + row.QuerySelector("td:nth-of-type(2) > a[href*=\"download.php?id=\"]")?.GetAttribute("href").TrimStart('/');
+            var qDetails = row.QuerySelector("td:nth-of-type(2) > a[href*=\"details.php?id=\"]");
 
-            // Parse the query string portion of the URL
-            var href = anchor.GetAttribute("href");
-            var qs = href.Substring(href.IndexOf('?') + 1);
-            var qsParams = qs.Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            
-            // Extract the category parameters we care about. 
-            // Note that sub2_cat can appear multiple times; same for sub3_cat, so we gather them in lists.
-            var mainCatParam = qsParams.FirstOrDefault(x => x.StartsWith("main_cat[]="));
-            var sub2CatParams = qsParams.Where(x => x.StartsWith("sub2_cat[]=")).ToList();
-            var sub3CatParams = qsParams.Where(x => x.StartsWith("sub3_cat[]=")).ToList();
-            
-            // Build up a single cat string that includes main_cat plus all sub2_cat & sub3_cat
-            var catParts = new List<string>();
-            if (!string.IsNullOrEmpty(mainCatParam))
-            {
-                catParts.Add(mainCatParam);
-            }
+            var title = qDetails?.GetAttribute("title").Trim();
+            var details = _settings.BaseUrl + qDetails?.GetAttribute("href").TrimStart('/');
 
-            if (sub2CatParams.Any())
-            {
-                catParts.AddRange(sub2CatParams);
-            }
-
-            if (sub3CatParams.Any())
-            {
-                catParts.AddRange(sub3CatParams);
-            }
-
-            var cat = string.Join("&", catParts);
+            var cat = row.QuerySelector("td:nth-of-type(1) a[href*=\"main_cat[]\"]")?.GetAttribute("href")?.Split('?').Last();
 
             var seeders = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(9)").TextContent);
             var leechers = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(10)").TextContent);
