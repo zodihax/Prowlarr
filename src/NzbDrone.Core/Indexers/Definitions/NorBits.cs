@@ -272,7 +272,7 @@ public class NorBitsParser : IParseIndexerResponse
             var details = _settings.BaseUrl + qDetails?.GetAttribute("href").TrimStart('/');
 
             var catQuery = row.QuerySelector("td:nth-of-type(1) a[href*=\"main_cat[]\"]")?.GetAttribute("href")?.Split('?').Last();
-            var catParams = queryPart.Split('&', StringSplitOptions.RemoveEmptyEntries);
+            var catParams = catQuery.Split('&', StringSplitOptions.RemoveEmptyEntries);
             var cat = catParams.FirstOrDefault(x => x.StartsWith("main_cat[]=", StringComparison.OrdinalIgnoreCase));
 
             var seeders = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(9)").TextContent);
