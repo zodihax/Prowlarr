@@ -265,17 +265,17 @@ public class NorBitsParser : IParseIndexerResponse
 
         foreach (var row in rows)
         {
-            var link = _settings.BaseUrl + row.QuerySelector("td:nth-of-type(2) > a[href*=\"download.php?id=\"]")?.GetAttribute("href").TrimStart('/');
+            var link = _settings.BaseUrl + row.QuerySelector("td:nth-of-type(2) > a[href*=\"download.php?id=\"]")?.GetAttribute("href")?.TrimStart('/');
             var qDetails = row.QuerySelector("td:nth-of-type(2) > a[href*=\"details.php?id=\"]");
 
-            var title = qDetails?.GetAttribute("title").Trim();
-            var details = _settings.BaseUrl + qDetails?.GetAttribute("href").TrimStart('/');
+            var title = qDetails?.GetAttribute("title")?.Trim();
+            var details = _settings.BaseUrl + qDetails?.GetAttribute("href")?.TrimStart('/');
 
             var catQuery = row.QuerySelector("td:nth-of-type(1) a[href*=\"main_cat[]\"]")?.GetAttribute("href")?.Split('?').Last().Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             var category = catQuery?.FirstOrDefault(x => x.StartsWith("main_cat[]=", StringComparison.OrdinalIgnoreCase));
 
-            var seeders = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(9)").TextContent);
-            var leechers = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(10)").TextContent);
+            var seeders = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(9)")?.TextContent);
+            var leechers = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(10)")?.TextContent);
 
             var release = new TorrentInfo
             {
@@ -283,7 +283,7 @@ public class NorBitsParser : IParseIndexerResponse
                 InfoUrl = details,
                 DownloadUrl = link,
                 Title = title,
-                Categories = _categories.MapTrackerCatToNewznab(cat),
+                Categories = _categories.MapTrackerCatToNewznab(category),
                 Size = ParseUtil.GetBytes(row.QuerySelector("td:nth-of-type(7)")?.TextContent),
                 Files = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(3) > a")?.TextContent.Trim()),
                 Grabs = ParseUtil.CoerceInt(row.QuerySelector("td:nth-of-type(8)")?.FirstChild?.TextContent.Trim()),
